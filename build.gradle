@@ -23,6 +23,11 @@ deploy {
             // Debug can be overridden by command line, for use with VSCode
             debug = getDebugOrDefault(false)
         }
+        fileCollectionArtifact('motionProfiles') {
+            targets << 'roborio'
+            files = fileTree(dir: '/resources/paths', include: "**/*.csv") //pc directory
+            directory = "/home/lvuser/paths" //roborio directory
+        }
     }
 }
 
@@ -32,6 +37,7 @@ dependencies {
     compile wpilib()
     compile ctre()
     compile navx()
+    compile pathfinder()
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')

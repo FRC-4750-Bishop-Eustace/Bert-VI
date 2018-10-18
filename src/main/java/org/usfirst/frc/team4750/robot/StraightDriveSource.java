@@ -28,7 +28,7 @@ public class StraightDriveSource implements PIDSource {
 	public double pidGet() {
 		// Get the average of the left and right encoders
 		average = (Robot.encoders.getLeftDistanceInches() + Robot.encoders.getRightDistanceInches()) / 2;
-		return average;
+		return Robot.encoders.getRightDistanceInches();
 	}
 
 }

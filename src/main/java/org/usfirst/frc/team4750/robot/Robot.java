@@ -1,21 +1,12 @@
 package org.usfirst.frc.team4750.robot;
 
 import java.awt.Point;
+import java.io.File;
 import java.util.HashMap;
 
-import org.usfirst.frc.team4750.robot.commands.AStarAuton;
-import org.usfirst.frc.team4750.robot.commands.LFromL;
-import org.usfirst.frc.team4750.robot.commands.LFromM;
-import org.usfirst.frc.team4750.robot.commands.LScaleFromL;
-import org.usfirst.frc.team4750.robot.commands.LeftBaseline;
-import org.usfirst.frc.team4750.robot.commands.RFromM;
-import org.usfirst.frc.team4750.robot.commands.RFromR;
-import org.usfirst.frc.team4750.robot.commands.RScaleFromR;
 import org.usfirst.frc.team4750.robot.commands.Release;
 import org.usfirst.frc.team4750.robot.commands.Reset;
-import org.usfirst.frc.team4750.robot.commands.RightBaseline;
 import org.usfirst.frc.team4750.robot.commands.SwitchElevatorMode;
-import org.usfirst.frc.team4750.robot.pathfinding.AStar;
 import org.usfirst.frc.team4750.robot.subsystems.DriveTrain;
 import org.usfirst.frc.team4750.robot.subsystems.Elevator;
 import org.usfirst.frc.team4750.robot.subsystems.Encoders;
@@ -26,11 +17,15 @@ import org.usfirst.frc.team4750.robot.subsystems.Limelight;
 import org.usfirst.frc.team4750.robot.subsystems.Ultrasonics;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import jaci.pathfinder.Pathfinder;
+import jaci.pathfinder.Trajectory;
+import jaci.pathfinder.followers.DistanceFollower;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -60,20 +55,21 @@ public class Robot extends TimedRobot {
 	public static String gameData;
 	Command autonomousCommand;
 
+	File leftFile;
+	File rightFile;
+	Trajectory leftTrajectory;
+	Trajectory rightTrajectory;
+	public static DistanceFollower left;
+	public static DistanceFollower right;
+	public static Notifier autoNotifier;
+	double wheelbase = 1.9791667; // Feet
+	double wheelDiameter = 0.5; // Feet
+	double maxVel = 9.256463818; // Feet/second
+	double maxAccl = 9.84251969; // Feet/second^2
+	double maxJerk = 196.850394; // Feet/second^3
+
 	// Start position chooser
 	static SendableChooser<String> startPositionChooser = new SendableChooser<>();
-
-	// Goal position chooser
-	static GoalChooser objectiveLL = new GoalChooser();
-	static GoalChooser objectiveLR = new GoalChooser();
-	static GoalChooser objectiveRL = new GoalChooser();
-	static GoalChooser objectiveRR = new GoalChooser();
-
-	// Final orientation chooser
-	static OrientationChooser orientationLL = new OrientationChooser();
-	static OrientationChooser orientationLR = new OrientationChooser();
-	static OrientationChooser orientationRL = new OrientationChooser();
-	static OrientationChooser orientationRR = new OrientationChooser();
 
 	// Starting points hash map
 	public static HashMap<String, Point> startPoints;
@@ -87,7 +83,6 @@ public class Robot extends TimedRobot {
 	// Final orientation
 	static String orientation;
 
-	// Reset command
 	Command reset = new Reset();
 
 	// Switch elevator mode command
@@ -129,18 +124,6 @@ public class Robot extends TimedRobot {
 		startPositionChooser.addObject("Right", "r");
 		SmartDashboard.putData("Start Position", startPositionChooser);
 
-		// Goal choosers
-		SmartDashboard.putData("LL Objective", objectiveLL.getChooser());
-		SmartDashboard.putData("LR Objective", objectiveLR.getChooser());
-		SmartDashboard.putData("RL Objective", objectiveRL.getChooser());
-		SmartDashboard.putData("RR Objective", objectiveRR.getChooser());
-
-		// Final orientation choosers
-		SmartDashboard.putData("LL Orientation", orientationLL.getChooser());
-		SmartDashboard.putData("LR Orientation", orientationLR.getChooser());
-		SmartDashboard.putData("RL Orientation", orientationRL.getChooser());
-		SmartDashboard.putData("RR Orientation", orientationRR.getChooser());
-
 		// Reset sensors
 		reset.start();
 
@@ -172,41 +155,84 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void autonomousInit() {
-		// Create planner
-		AStar pathPlanner = new AStar();
-		try { // Try to get a route
-			autonomousCommand = new AStarAuton(pathPlanner.getPath(getStartPoint(getStart()), getGoalPoint(getGoal())));
-		} catch (Exception e) { // Failed route, print the stack trace and run regular 
-			System.out.println("PathPlanning failed. Running regular autonomous: ");
-			e.printStackTrace();
-			if (gameData == null) {
-				gameData = DriverStation.getInstance().getGameSpecificMessage();
+		String endPos;
+
+		if (getStart().equalsIgnoreCase("M")) {
+			if (gameData.charAt(0) == 'L') {
+				endPos = "LfromM";
+			} else if (gameData.charAt(0) == 'R') {
+				endPos = "RfromM";
 			} else {
-				if (getStart().equalsIgnoreCase("L")) {
-					if (gameData.charAt(0) == 'L') {
-						autonomousCommand = new LFromL();
-					} else if (gameData.charAt(0) == 'R' && gameData.charAt(1) == 'L') {
-						autonomousCommand = new LScaleFromL();
-					} else {
-						autonomousCommand = new LeftBaseline();
-					}
-				} else if (getStart().equalsIgnoreCase("R")) {
-					if (gameData.charAt(0) == 'R') {
-						autonomousCommand = new RFromR();
-					} else if (gameData.charAt(0) == 'L' && gameData.charAt(1) == 'R') {
-						autonomousCommand = new RScaleFromR();
-					} else {
-						autonomousCommand = new RightBaseline();
-					}
-				} else if (getStart().equalsIgnoreCase("M")) {
-					if (gameData.charAt(0) == 'R') {
-						autonomousCommand = new RFromM();
-					} else if (gameData.charAt(0) == 'L') {
-						autonomousCommand = new LFromM();
-					}
-				}
+				endPos = "baseline";
 			}
+		} else if (getStart().equalsIgnoreCase("L")) {
+			if (gameData.charAt(0) == 'L') {
+				endPos = "LfromL";
+			} else if (gameData.charAt(0) == 'R') {
+				endPos = "RfromL";
+			} else {
+				endPos = "baseline";
+			}
+		} else if (getStart().equalsIgnoreCase("R")) {
+			if (gameData.charAt(0) == 'L') {
+				endPos = "LfromR";
+			} else if (gameData.charAt(0) == 'R') {
+				endPos = "RfromR";
+			} else {
+				endPos = "baseline";
+			}
+		} else {
+			endPos = "baseline";
 		}
+
+		leftFile = new File("/home/lvuser/paths/" + endPos + "_left_Jaci.csv");
+		rightFile = new File("/home/lvuser/paths/" + endPos + "_right_Jaci.csv");
+		leftTrajectory = Pathfinder.readFromCSV(leftFile);
+		rightTrajectory = Pathfinder.readFromCSV(rightFile);
+		left = new DistanceFollower(leftTrajectory);
+		right = new DistanceFollower(rightTrajectory);
+		left.configurePIDVA(1.0, 0.0, 0.6, 1 / maxVel, 0);
+		right.configurePIDVA(1.0, 0.0, 0.3, 1 / maxVel, 0);
+
+		autonomousCommand = new RScaleFromR();
+
+		// autoNotifier = new Notifier(new RunAuton());
+
+		// // Create planner
+		// AStar pathPlanner = new AStar();
+		// try { // Try to get a route
+		// 	autonomousCommand = new AStarAuton(pathPlanner.getPath(getStartPoint(getStart()), getGoalPoint(getGoal())));
+		// } catch (Exception e) { // Failed route, print the stack trace and run regular 
+		// 	System.out.println("PathPlanning failed. Running regular autonomous: ");
+		// 	e.printStackTrace();
+		// 	if (gameData == null) {
+		// 		gameData = DriverStation.getInstance().getGameSpecificMessage();
+		// 	} else {
+		// 		if (getStart().equalsIgnoreCase("L")) {
+		// 			if (gameData.charAt(0) == 'L') {
+		// 				autonomousCommand = new LFromL();
+		// 			} else if (gameData.charAt(0) == 'R' && gameData.charAt(1) == 'L') {
+		// 				autonomousCommand = new LScaleFromL();
+		// 			} else {
+		// 				autonomousCommand = new LeftBaseline();
+		// 			}
+		// 		} else if (getStart().equalsIgnoreCase("R")) {
+		// 			if (gameData.charAt(0) == 'R') {
+		// 				autonomousCommand = new RFromR();
+		// 			} else if (gameData.charAt(0) == 'L' && gameData.charAt(1) == 'R') {
+		// 				autonomousCommand = new RScaleFromR();
+		// 			} else {
+		// 				autonomousCommand = new RightBaseline();
+		// 			}
+		// 		} else if (getStart().equalsIgnoreCase("M")) {
+		// 			if (gameData.charAt(0) == 'R') {
+		// 				autonomousCommand = new RFromM();
+		// 			} else if (gameData.charAt(0) == 'L') {
+		// 				autonomousCommand = new LFromM();
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 		// Schedule the autonomous command
 		if (autonomousCommand != null) {
@@ -238,6 +264,8 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopPeriodic() {
 		Scheduler.getInstance().run();
+		System.out.println("Left: " + encoders.getLeftCount());
+		System.out.println("Right: " + encoders.getRightCount());
 	}
 
 	/**
@@ -246,38 +274,6 @@ public class Robot extends TimedRobot {
 	@Override
 	public void testPeriodic() {
 		// Do nothing
-	}
-
-	/**
-	 * This method returns the selected objective for whatever order the plates are
-	 * in
-	 * 
-	 * @return goal position
-	 */
-	public static String getGoal() {
-		// Get game data if not already gotten
-		gameData = DriverStation.getInstance().getGameSpecificMessage();
-		// Make sure game data is not null
-		if (gameData == null) {
-			return null;
-		}
-
-		// Get the switch and scale position
-		char switchPos = gameData.charAt(0);
-		char scalePos = gameData.charAt(1);
-
-		// Check which position the switch and scale are at and get the goal point
-		// chosen from the dashboard
-		if (switchPos == 'L' && scalePos == 'L') {
-			return objectiveLL.getSelected();
-		} else if (switchPos == 'L' && scalePos == 'R') {
-			return objectiveLR.getSelected();
-		} else if (switchPos == 'R' && scalePos == 'L') {
-			return objectiveRL.getSelected();
-		} else if (switchPos == 'R' && scalePos == 'R') {
-			return objectiveRR.getSelected();
-		}
-		return null;
 	}
 
 	/**
@@ -314,46 +310,30 @@ public class Robot extends TimedRobot {
 		return startPoints.get(position);
 	}
 
-	/**
-	 * This method returns the selected orientation for whatever order the plates
-	 * are in
-	 * 
-	 * @return goal orientation
-	 */
-	public static double getGoalOrientation() {
-		// Get game data if not already gotten
-		gameData = DriverStation.getInstance().getGameSpecificMessage();
-		// Make sure game data is not null
-		if (gameData == null) {
-			return 0;
-		}
+	class RunAuton implements Runnable {
+		@Override
+		public void run() {
+			System.out.println("Left finished: " + Robot.left.isFinished());
+			System.out.println("Right finished: " + Robot.right.isFinished());
+			if (!Robot.left.isFinished() || !Robot.right.isFinished()) {
+				System.out.println("Left Trajectory: " + leftTrajectory.get());
+				double l = Robot.left.calculate(Robot.encoders.getLeftDistanceFeet());
+				double r = Robot.right.calculate(Robot.encoders.getRightDistanceFeet());
 
-		// Get the switch and scale position
-		char switchPos = gameData.charAt(0);
-		char scalePos = gameData.charAt(1);
+				double gyro_heading = Robot.imu.getAngle();
+				double desired_heading = Pathfinder.r2d(Robot.left.getHeading());
 
-		// Check which position the switch and scale are at and get the final
-		// orientation chosen from the dashboard
-		if (switchPos == 'L' && scalePos == 'L') {
-			orientation = orientationLL.getSelected();
-		} else if (switchPos == 'L' && scalePos == 'R') {
-			orientation = orientationLR.getSelected();
-		} else if (switchPos == 'R' && scalePos == 'L') {
-			orientation = orientationRL.getSelected();
-		} else if (switchPos == 'R' && scalePos == 'R') {
-			orientation = orientationRR.getSelected();
-		}
+				double angleDifference = 0.8 * (-1.0 / 80.0)
+						* Pathfinder.boundHalfDegrees(desired_heading - gyro_heading);
+				double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
 
-		// Return the final angle
-		if (orientation.equalsIgnoreCase("f")) {
-			return 0;
-		} else if (orientation.equalsIgnoreCase("l")) {
-			return -90;
-		} else if (orientation.equalsIgnoreCase("r")) {
-			return 90;
-		} else if (orientation.equalsIgnoreCase("b")) {
-			return 180;
+				System.out.println(l + turn);
+
+				Robot.driveTrain.tankDrive(l + turn, r - turn);
+			} else {
+				Robot.driveTrain.brake();
+				Robot.autoNotifier.stop();
+			}
 		}
-		return 0;
 	}
 }
