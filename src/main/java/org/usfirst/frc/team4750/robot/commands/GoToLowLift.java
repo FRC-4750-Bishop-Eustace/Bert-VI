@@ -3,23 +3,25 @@ package org.usfirst.frc.team4750.robot.commands;
 import org.usfirst.frc.team4750.robot.Robot;
 import org.usfirst.frc.team4750.robot.RobotMap;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- * This command rotates the grabber to the top position
- *
+ * This command moves the elevator to the high position
+ * 
  */
-public class RotateToTop extends Command {
-
-	// Check if finished
+public class GoToHighLift extends Command {
+	
 	boolean finished = false;
+
+	public GoToHighLift() {
+		requires(Robot.elevator);
+	}
 
 	// Called repeatedly when this Command is scheduled to run
 	@Override
 	protected void execute() {
-		if (!Robot.grabber.getHigh() && Timer.getMatchTime() > 135) {
-			Robot.grabber.rotateGrabber(RobotMap.GRABBER_UP_SPEED);
+		if (Robot.elevator.getPosition() != 1) {
+			Robot.lifter.setLifterSpeed(RobotMap.LIFTER_SPEED);
 		} else {
 			finished = true;
 		}
@@ -34,7 +36,7 @@ public class RotateToTop extends Command {
 	// Called once after isFinished returns true
 	@Override
 	protected void end() {
-		Robot.grabber.rotateGrabber(0);
+		Robot.elevator.stopElevator();
 	}
 
 	// Called when another command which requires one or more of the same

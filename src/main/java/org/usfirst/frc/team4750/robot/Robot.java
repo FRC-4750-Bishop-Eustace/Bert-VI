@@ -4,7 +4,6 @@ import java.awt.Point;
 import java.io.File;
 import java.util.HashMap;
 
-import org.usfirst.frc.team4750.robot.commands.Release;
 import org.usfirst.frc.team4750.robot.commands.Reset;
 import org.usfirst.frc.team4750.robot.commands.SwitchElevatorMode;
 import org.usfirst.frc.team4750.robot.subsystems.DriveTrain;
@@ -89,7 +88,7 @@ public class Robot extends TimedRobot {
 	Command switchElevatorMode = new SwitchElevatorMode();
 
 	// Release piston command
-	Command release = new Release();
+	Command lift = new Lift();
 
 	/**
 	 * This function is run when the robot is first started up and should be used
@@ -131,7 +130,7 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putData("Reset", reset);
 
 		// Put release command on dashboard
-		SmartDashboard.putData("Release", release);
+		SmartDashboard.putData("Lift", lift);
 
 		// Put switch elevator mode command on dashboard
 		SmartDashboard.putData("Switch Elevator Mode", switchElevatorMode);

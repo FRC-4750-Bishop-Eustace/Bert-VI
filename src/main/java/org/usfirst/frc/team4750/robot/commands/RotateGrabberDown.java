@@ -11,13 +11,27 @@ import edu.wpi.first.wpilibj.command.Command;
  */
 public class RotateGrabberDown extends Command {
 
+	boolean timed;
+	
+	boolean finished = false;
+	
+	public RotateGrabberUp(boolean timed) {
+		this.timed = timed;
+	}
+
 	// Called repeatedly when this Command is scheduled to run
 	@Override
 	protected void execute() {
-		if (!Robot.grabber.getLow()) {
+		if(!timed) {
+			if (!Robot.grabber.getLow()) {
+				Robot.grabber.rotateGrabber(RobotMap.GRABBER_DOWN_SPEED);
+			} else {
+				Robot.grabber.rotateGrabber(0);
+			}
+		}else {
 			Robot.grabber.rotateGrabber(RobotMap.GRABBER_DOWN_SPEED);
-		} else {
-			Robot.grabber.rotateGrabber(0);
+			Timer.delay(1);
+			finished = true;
 		}
 	}
 
