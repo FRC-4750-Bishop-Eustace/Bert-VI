@@ -23,6 +23,7 @@ public class RotateGrabberUp extends Command {
 	// Called repeatedly when this Command is scheduled to run
 	@Override
 	protected void execute() {
+		if(Robot.grabber.getPiston()) return;
 		if(!timed) {
 			if (!Robot.grabber.getHigh()) {
 				Robot.grabber.rotateGrabber(RobotMap.GRABBER_UP_SPEED);

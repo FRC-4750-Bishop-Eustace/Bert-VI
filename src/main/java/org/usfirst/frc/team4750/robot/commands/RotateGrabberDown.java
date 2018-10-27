@@ -15,7 +15,7 @@ public class RotateGrabberDown extends Command {
 	
 	boolean finished = false;
 	
-	public RotateGrabberUp(boolean timed) {
+	public RotateGrabberDown(boolean timed) {
 		this.timed = timed;
 	}
 
@@ -30,7 +30,7 @@ public class RotateGrabberDown extends Command {
 			}
 		}else {
 			Robot.grabber.rotateGrabber(RobotMap.GRABBER_DOWN_SPEED);
-			Timer.delay(1);
+			//Timer.delay(1);
 			finished = true;
 		}
 	}

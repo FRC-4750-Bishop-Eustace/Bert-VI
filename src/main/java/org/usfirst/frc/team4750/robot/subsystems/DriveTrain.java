@@ -139,6 +139,14 @@ public class DriveTrain extends Subsystem implements PIDOutput {
 		robotDrive.tankDrive(0, 0);
 	}
 
+	public double getMotorSpeed(int side) {
+		if(side == 0) {
+			return leftMotors.get();
+		}else {
+			return rightMotors.get();
+		}
+	}
+
 	// Set global output variable to the PIDController output (turnController,
 	// driveController)
 	@Override

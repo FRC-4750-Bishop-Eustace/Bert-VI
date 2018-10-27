@@ -4,8 +4,19 @@ import java.awt.Point;
 import java.io.File;
 import java.util.HashMap;
 
+import org.usfirst.frc.team4750.robot.commands.AStarAuton;
+import org.usfirst.frc.team4750.robot.commands.LFromL;
+import org.usfirst.frc.team4750.robot.commands.LFromM;
+import org.usfirst.frc.team4750.robot.commands.LScaleFromL;
+import org.usfirst.frc.team4750.robot.commands.LeftBaseline;
+import org.usfirst.frc.team4750.robot.commands.Lift;
+import org.usfirst.frc.team4750.robot.commands.RFromM;
+import org.usfirst.frc.team4750.robot.commands.RFromR;
+import org.usfirst.frc.team4750.robot.commands.RScaleFromR;
 import org.usfirst.frc.team4750.robot.commands.Reset;
+import org.usfirst.frc.team4750.robot.commands.RightBaseline;
 import org.usfirst.frc.team4750.robot.commands.SwitchElevatorMode;
+import org.usfirst.frc.team4750.robot.pathfinding.AStar;
 import org.usfirst.frc.team4750.robot.subsystems.DriveTrain;
 import org.usfirst.frc.team4750.robot.subsystems.Elevator;
 import org.usfirst.frc.team4750.robot.subsystems.Encoders;
@@ -154,38 +165,28 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void autonomousInit() {
-		String endPos;
-
 		if (getStart().equalsIgnoreCase("M")) {
 			if (gameData.charAt(0) == 'L') {
-				endPos = "LfromM";
+				autonomousCommand = new LFromM();
 			} else if (gameData.charAt(0) == 'R') {
-				endPos = "RfromM";
-			} else {
-				endPos = "baseline";
+				autonomousCommand = new RFromM();
 			}
 		} else if (getStart().equalsIgnoreCase("L")) {
 			if (gameData.charAt(0) == 'L') {
-				endPos = "LfromL";
+				autonomousCommand = new LFromL();
 			} else if (gameData.charAt(0) == 'R') {
-				endPos = "RfromL";
-			} else {
-				endPos = "baseline";
+				autonomousCommand = new LeftBaseline();
 			}
 		} else if (getStart().equalsIgnoreCase("R")) {
 			if (gameData.charAt(0) == 'L') {
-				endPos = "LfromR";
+				autonomousCommand = new RightBaseline();
 			} else if (gameData.charAt(0) == 'R') {
-				endPos = "RfromR";
-			} else {
-				endPos = "baseline";
+				autonomousCommand = new RFromR();
 			}
-		} else {
-			endPos = "baseline";
 		}
 
-		leftFile = new File("/home/lvuser/paths/" + endPos + "_left_Jaci.csv");
-		rightFile = new File("/home/lvuser/paths/" + endPos + "_right_Jaci.csv");
+		leftFile = new File("/home/lvuser/paths/Test_left_Jaci.csv");
+		rightFile = new File("/home/lvuser/paths/Test_right_Jaci.csv");
 		leftTrajectory = Pathfinder.readFromCSV(leftFile);
 		rightTrajectory = Pathfinder.readFromCSV(rightFile);
 		left = new DistanceFollower(leftTrajectory);
@@ -193,9 +194,10 @@ public class Robot extends TimedRobot {
 		left.configurePIDVA(1.0, 0.0, 0.6, 1 / maxVel, 0);
 		right.configurePIDVA(1.0, 0.0, 0.3, 1 / maxVel, 0);
 
-		autonomousCommand = new RScaleFromR();
+		//autonomousCommand = new RScaleFromR();
 
-		// autoNotifier = new Notifier(new RunAuton());
+		//autoNotifier = new Notifier(new RunAuton());
+		//autoNotifier.startPeriodic(0.05);
 
 		// // Create planner
 		// AStar pathPlanner = new AStar();
@@ -232,8 +234,6 @@ public class Robot extends TimedRobot {
 		// 		}
 		// 	}
 		// }
-
-		// Schedule the autonomous command
 		if (autonomousCommand != null) {
 			autonomousCommand.start();
 		}
@@ -245,6 +245,10 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
+		System.out.println("Left encoder raw: " + encoders.getLeftCount());
+		System.out.println("Right encoder raw: " + encoders.getRightCount());
+		System.out.println("Left encoder inches: " + encoders.getLeftDistanceInches());
+		System.out.println("Right encoder inches: " + encoders.getRightDistanceInches());
 	}
 
 	@Override
@@ -263,8 +267,6 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopPeriodic() {
 		Scheduler.getInstance().run();
-		System.out.println("Left: " + encoders.getLeftCount());
-		System.out.println("Right: " + encoders.getRightCount());
 	}
 
 	/**
@@ -294,7 +296,7 @@ public class Robot extends TimedRobot {
 	 * @return start position
 	 */
 	public static String getStart() {
-		return startPositionChooser.getSelected();
+		return "l";
 	}
 
 	/**
@@ -315,7 +317,6 @@ public class Robot extends TimedRobot {
 			System.out.println("Left finished: " + Robot.left.isFinished());
 			System.out.println("Right finished: " + Robot.right.isFinished());
 			if (!Robot.left.isFinished() || !Robot.right.isFinished()) {
-				System.out.println("Left Trajectory: " + leftTrajectory.get());
 				double l = Robot.left.calculate(Robot.encoders.getLeftDistanceFeet());
 				double r = Robot.right.calculate(Robot.encoders.getRightDistanceFeet());
 
@@ -326,9 +327,9 @@ public class Robot extends TimedRobot {
 						* Pathfinder.boundHalfDegrees(desired_heading - gyro_heading);
 				double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
 
-				System.out.println(l + turn);
+				System.out.println(l * 0.1);
 
-				Robot.driveTrain.tankDrive(l + turn, r - turn);
+				Robot.driveTrain.tankDrive(l * 0.1, r * 0.1);
 			} else {
 				Robot.driveTrain.brake();
 				Robot.autoNotifier.stop();

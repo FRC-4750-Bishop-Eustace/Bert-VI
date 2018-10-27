@@ -55,7 +55,7 @@ public class RobotMap {
 	public static final double ELEVATOR_UP_SPEED = -0.8;
 	public static final double ELEVATOR_DOWN_SPEED = 0.4;
 	public static final double ELEVATOR_DOWN_TO_MID_SPEED = 0.3;
-	public static final double LIFTER_SPEED = 1;
+	public static final double LIFTER_SPEED = 0.1;
 	public static final double GRABBER_UP_SPEED = 0.6;
 	public static final double GRABBER_DOWN_SPEED = -0.6;
 }

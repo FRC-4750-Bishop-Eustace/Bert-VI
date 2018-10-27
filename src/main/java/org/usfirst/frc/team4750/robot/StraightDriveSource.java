@@ -15,12 +15,11 @@ public class StraightDriveSource implements PIDSource {
 
 	@Override
 	public void setPIDSourceType(PIDSourceType pidSource) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public PIDSourceType getPIDSourceType() {
-		// TODO Auto-generated method stub
 		return PIDSourceType.kDisplacement;
 	}
 
@@ -28,7 +27,7 @@ public class StraightDriveSource implements PIDSource {
 	public double pidGet() {
 		// Get the average of the left and right encoders
 		average = (Robot.encoders.getLeftDistanceInches() + Robot.encoders.getRightDistanceInches()) / 2;
-		return Robot.encoders.getRightDistanceInches();
+		return Robot.encoders.getLeftDistanceInches();
 	}
 
 }

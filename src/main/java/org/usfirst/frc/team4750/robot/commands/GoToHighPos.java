@@ -18,6 +18,7 @@ public class GoToHighPos extends Command {
 	// Called repeatedly when this Command is scheduled to run
 	@Override
 	protected void execute() {
+		if(Robot.grabber.getHigh()) return;
 		if (Robot.elevator.getPosition() != 3) {
 			Robot.elevator.setElevatorSpeed(RobotMap.ELEVATOR_UP_SPEED);
 		} else {

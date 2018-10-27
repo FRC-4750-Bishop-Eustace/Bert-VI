@@ -11,7 +11,9 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 public class OurRobotDrive extends DifferentialDrive {
 
 	// Constant to protect from brownouts
-	double constant = 0.85;
+	double constant = 0.9;
+	double midConstant = 0.7;
+	double highConstant = 0.5;
 
 	// Takes in two drive motors (or speed controller groups)
 	public OurRobotDrive(SpeedController leftMotor, SpeedController rightMotor) {
@@ -21,18 +23,26 @@ public class OurRobotDrive extends DifferentialDrive {
 	// Supers the tank drive, protecting the motors from browning out
 	@Override
 	public void tankDrive(double leftSpeed, double rightSpeed) {
-		super.tankDrive(brownOut(leftSpeed), brownOut(rightSpeed));
+		super.tankDrive(gear(leftSpeed), gear(rightSpeed));
 	}
 
 	// Supers the arcade drive, protecting the motors from browning out
 	@Override
 	public void arcadeDrive(double forwardSpeed, double turnSpeed) {
-		super.arcadeDrive(brownOut(forwardSpeed), brownOut(turnSpeed));
+		super.arcadeDrive(gear(forwardSpeed), gear(turnSpeed));
 	}
 
 	// Protects the motors from brownouts
-	private double brownOut(double value) {
-		return value * constant;
+	private double gear(double value) {
+		if(Robot.elevator.getPosition() == 1) {
+			return value * constant;
+		}else if(Robot.elevator.getPosition() == 2) {
+			return value * midConstant;
+		}else if(Robot.elevator.getPosition() == 3) {
+			return value * highConstant;
+		}else {
+			return value * midConstant;
+		}
 	}
 
 }

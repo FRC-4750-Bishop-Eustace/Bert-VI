@@ -9,11 +9,11 @@ import edu.wpi.first.wpilibj.command.Command;
  * This command moves the elevator to the high position
  * 
  */
-public class GoToHighLift extends Command {
+public class GoToLowLift extends Command {
 	
 	boolean finished = false;
 
-	public GoToHighLift() {
+	public GoToLowLift() {
 		requires(Robot.elevator);
 	}
 

@@ -18,6 +18,7 @@ public class GoToMidPos extends Command {
 	// Called repeatedly when this Command is scheduled to run
 	@Override
 	protected void execute() {
+		if(Robot.grabber.getHigh()) return;
 		if (Robot.elevator.getPosition() != 2) {
 			if (Robot.elevator.getPosition() > 2) {
 				Robot.elevator.setElevatorSpeed(RobotMap.ELEVATOR_DOWN_TO_MID_SPEED);

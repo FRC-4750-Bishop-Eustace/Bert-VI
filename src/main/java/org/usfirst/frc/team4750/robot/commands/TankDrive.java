@@ -40,18 +40,18 @@ public class TankDrive extends Command {
 		// Get the current pitch of the robot
 		double pitch = Robot.imu.getPitch();
 
-		// Check if we are tilting past the threshold, try to correct
-		if (Math.abs(pitch) >= offBalanceThreshold && pitch > 0) {
-			if (Math.abs(pitch) >= onBalanceThreshold) {
-				pitch = Robot.imu.getPitch();
-				Robot.driveTrain.setDriveSpeed(P * pitch);
-			}
-		} else if (Math.abs(pitch) >= offBalanceThreshold && pitch < 0) {
-			if (Math.abs(pitch) >= onBalanceThreshold) {
-				pitch = Robot.imu.getPitch();
-				Robot.driveTrain.setDriveSpeed(P * pitch);
-			}
-		}
+		// // Check if we are tilting past the threshold, try to correct
+		// if (Math.abs(pitch) >= offBalanceThreshold && pitch > 0) {
+		// 	if (Math.abs(pitch) >= onBalanceThreshold) {
+		// 		pitch = Robot.imu.getPitch();
+		// 		Robot.driveTrain.setDriveSpeed(P * pitch);
+		// 	}
+		// } else if (Math.abs(pitch) >= offBalanceThreshold && pitch < 0) {
+		// 	if (Math.abs(pitch) >= onBalanceThreshold) {
+		// 		pitch = Robot.imu.getPitch();
+		// 		Robot.driveTrain.setDriveSpeed(P * pitch);
+		// 	}
+		// }
 
 		if (OI.leftDriveStick.getRawButton(2)) {
 			// Call dual joystick drive and pass in both joysticks

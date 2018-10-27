@@ -89,7 +89,7 @@ public class DriveToDistance extends Command {
 		// Wait for motor update
 		Timer.delay(0.005);
 
-		// System.out.println("DriveToDistance(): Execute ran!");
+		System.out.println("DriveToDistance(): Execute ran!");
 	}
 
 	// Make this return true when this Command no longer needs to run execute()
@@ -105,7 +105,7 @@ public class DriveToDistance extends Command {
 		Robot.driveTrain.brake();
 		// Disable PID controller
 		driveController.disable();
-		// System.out.println("DriveToDistance(): Should be at target!");
+		System.out.println("DriveToDistance(): Should be at target!");
 	}
 
 	// Called when another command which requires one or more of the same

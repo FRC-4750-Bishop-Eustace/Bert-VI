@@ -55,6 +55,7 @@ public class Grabber extends Subsystem {
 	 * This method opens or closes the grabber's arms
 	 */
 	public void switchPistons() {
+		if(getHigh()) return;
 		if (piston.get()) {
 			piston.set(false);
 		} else {
@@ -69,6 +70,7 @@ public class Grabber extends Subsystem {
 	 * @param rotateSpeed
 	 */
 	public void armDrive(double speed, double rotateSpeed) {
+		if(getHigh()) return;
 		armDrive.arcadeDrive(speed, rotateSpeed);
 	}
 
@@ -97,6 +99,10 @@ public class Grabber extends Subsystem {
 	 */
 	public boolean getHigh() {
 		return high.get();
+	}
+
+	public boolean getPiston() {
+		return piston.get();
 	}
 
 	@Override

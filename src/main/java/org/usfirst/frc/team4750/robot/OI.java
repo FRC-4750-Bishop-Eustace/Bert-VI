@@ -3,7 +3,6 @@ package org.usfirst.frc.team4750.robot;
 import org.usfirst.frc.team4750.robot.commands.GoToHighPos;
 import org.usfirst.frc.team4750.robot.commands.GoToLowPos;
 import org.usfirst.frc.team4750.robot.commands.GoToMidPos;
-import org.usfirst.frc.team4750.robot.commands.Lift;
 import org.usfirst.frc.team4750.robot.commands.RotateGrabberDown;
 import org.usfirst.frc.team4750.robot.commands.RotateGrabberUp;
 import org.usfirst.frc.team4750.robot.commands.RunGrabber;
@@ -37,8 +36,6 @@ public class OI {
 	Button grabberRight = new JoystickButton(controlDriveStick, 7);
 	Button grabberRotateDown = new JoystickButton(controlDriveStick, 2);
 	Button grabberRotateUp = new JoystickButton(controlDriveStick, 4);
-	
-	Button liftButton = new JoystickButton(rightDriveStick, 4);
 
 	public OI() {
 		// Elevator buttons
@@ -52,9 +49,7 @@ public class OI {
 		grabberIn.whileHeld(new RunGrabber(-1, 0, false));
 		grabberLeft.whileHeld(new RunGrabber(0, 1, false));
 		grabberRight.whileHeld(new RunGrabber(0, -1, false));
-		grabberRotateDown.whileHeld(new RotateGrabberDown());
+		grabberRotateDown.whileHeld(new RotateGrabberDown(false));
 		grabberRotateUp.whileHeld(new RotateGrabberUp(false));
-		
-		liftButton.whenReleased(new Lift());
 	}
 }

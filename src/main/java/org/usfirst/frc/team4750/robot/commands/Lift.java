@@ -13,7 +13,7 @@ public class Lift extends CommandGroup {
         addSequential(new DriveToRaise());
         addSequential(new GoToHighPos());
         addSequential(new DriveToLift());
-        addSeqential(new RotateGrabberDown(true));
+        addSequential(new RotateGrabberDown(true));
         addSequential(new GoToMidPos());
         addSequential(new SwitchElevatorMode());
         addSequential(new GoToLowLift());
